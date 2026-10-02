@@ -142,3 +142,189 @@ input {
   color: #2563eb;
   font-size: 12px;
 }
+
+.email-detail {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 30px;
+}
+
+.back-button {
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 25px;
+  font-size: 15px;
+}
+
+.email-detail h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+.detail-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.detail-meta span {
+  color: #9ca3af;
+}
+
+.email-body {
+  margin-top: 25px;
+  line-height: 1.7;
+  color: #374151;
+}
+
+.action-panel {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.action-panel h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.action-panel p {
+  margin: 8px 0;
+  color: #4b5563;
+}
+
+.action-button {
+  margin-top: 15px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 7px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background: #1d4ed8;
+}
+
+.action-button.completed {
+  background: #16a34a;
+  cursor: default;
+}
+
+.email-card.unread {
+  border-left: 4px solid #2563eb;
+}
+
+.email-card.unread h3 {
+  font-weight: 700;
+}
+
+.email-card.unread .email-top strong {
+  font-weight: 700;
+}
+.category-name {
+  flex: 1;
+}
+
+.unread-count {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.stat-card > span {
+  font-size: 28px;
+}
+
+.stat-card strong {
+  font-size: 24px;
+}
+
+.stat-card p {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6b7280;
+}
+
+.empty-state div {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+  color: #374151;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .sidebar nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main-content {
+    max-width: none;
+    padding: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
