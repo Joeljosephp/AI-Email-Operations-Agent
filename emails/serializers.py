@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Category, Email, Action, Draft, ActivityLog
 
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -13,8 +14,6 @@ class CategorySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-
-from .models import Category, Email
 
 
 class EmailSerializer(serializers.ModelSerializer):
@@ -37,6 +36,7 @@ class EmailSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
 class ActionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Action
@@ -50,6 +50,7 @@ class ActionSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
 class DraftSerializer(serializers.ModelSerializer):
     class Meta:
         model = Draft
@@ -61,6 +62,8 @@ class DraftSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
 class ActivityLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityLog
@@ -70,4 +73,3 @@ class ActivityLogSerializer(serializers.ModelSerializer):
             "details",
             "created_at",
         ]
-

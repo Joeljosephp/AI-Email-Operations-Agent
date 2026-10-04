@@ -27,18 +27,26 @@ def category_list(request):
         categories = Category.objects.filter(user=request.user)
         serializer = CategorySerializer(categories, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
     serializer = CategorySerializer(data=request.data)
 
     if serializer.is_valid():
         serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
     return Response(
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+
 
 @api_view(["PATCH"])
 def category_update(request, pk):
@@ -61,6 +69,7 @@ def category_update(request, pk):
 
     if serializer.is_valid():
         serializer.save()
+
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
@@ -70,6 +79,7 @@ def category_update(request, pk):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+
 
 @api_view(["DELETE"])
 def category_delete(request, pk):
@@ -90,6 +100,7 @@ def category_delete(request, pk):
         status=status.HTTP_204_NO_CONTENT
     )
 
+
 @api_view(["GET", "POST"])
 def email_list(request):
 
@@ -105,6 +116,14 @@ def email_list(request):
     serializer = EmailSerializer(data=request.data)
 
     if serializer.is_valid():
+        category = serializer.validated_data.get("category")
+
+        if category is not None and category.user != request.user:
+            return Response(
+                {"detail": "Category not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         serializer.save(user=request.user)
 
         return Response(
@@ -116,6 +135,8 @@ def email_list(request):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+
+
 @api_view(["PATCH"])
 def email_update(request, pk):
     try:
@@ -136,7 +157,16 @@ def email_update(request, pk):
     )
 
     if serializer.is_valid():
+        category = serializer.validated_data.get("category")
+
+        if category is not None and category.user != request.user:
+            return Response(
+                {"detail": "Category not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         serializer.save()
+
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
@@ -146,6 +176,7 @@ def email_update(request, pk):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+
 
 @api_view(["DELETE"])
 def email_delete(request, pk):
@@ -165,6 +196,7 @@ def email_delete(request, pk):
     return Response(
         status=status.HTTP_204_NO_CONTENT
     )
+
 
 @api_view(["GET", "POST"])
 def action_list(request):
@@ -259,6 +291,7 @@ def action_delete(request, pk):
         status=status.HTTP_204_NO_CONTENT
     )
 
+
 @api_view(["GET", "POST"])
 def draft_list(request):
 
@@ -351,6 +384,7 @@ def draft_delete(request, pk):
     return Response(
         status=status.HTTP_204_NO_CONTENT
     )
+
 
 @api_view(["GET"])
 def activity_list(request):
