@@ -1,7 +1,9 @@
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Category, Email, Action, Draft, ActivityLog
 
@@ -13,6 +15,12 @@ from .serializers import (
     ActivityLogSerializer,
 )
 
+from .auth_serializers import RegisterSerializer
+
+
+# ============================================================
+# HEALTH CHECK
+# ============================================================
 
 def health_check(request):
     return JsonResponse({
@@ -21,21 +29,83 @@ def health_check(request):
     })
 
 
+# ============================================================
+# AUTHENTICATION
+# ============================================================
+
+@api_view(["POST"])
+def register(request):
+
+    serializer = RegisterSerializer(
+        data=request.data
+    )
+
+    if serializer.is_valid():
+        user = serializer.save()
+
+        return Response(
+            {
+                "message": "User created successfully.",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                }
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    return Response(
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def me(request):
+
+    user = request.user
+
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+    })
+
+
+# ============================================================
+# CATEGORY ENDPOINTS
+# ============================================================
+
 @api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def category_list(request):
+
     if request.method == "GET":
-        categories = Category.objects.filter(user=request.user)
-        serializer = CategorySerializer(categories, many=True)
+
+        categories = Category.objects.filter(
+            user=request.user
+        )
+
+        serializer = CategorySerializer(
+            categories,
+            many=True
+        )
 
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
         )
 
-    serializer = CategorySerializer(data=request.data)
+    serializer = CategorySerializer(
+        data=request.data
+    )
 
     if serializer.is_valid():
-        serializer.save(user=request.user)
+        serializer.save(
+            user=request.user
+        )
 
         return Response(
             serializer.data,
@@ -49,12 +119,15 @@ def category_list(request):
 
 
 @api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
 def category_update(request, pk):
+
     try:
         category = Category.objects.get(
             pk=pk,
             user=request.user
         )
+
     except Category.DoesNotExist:
         return Response(
             {"detail": "Category not found."},
@@ -82,12 +155,15 @@ def category_update(request, pk):
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def category_delete(request, pk):
+
     try:
         category = Category.objects.get(
             pk=pk,
             user=request.user
         )
+
     except Category.DoesNotExist:
         return Response(
             {"detail": "Category not found."},
@@ -101,30 +177,54 @@ def category_delete(request, pk):
     )
 
 
+# ============================================================
+# EMAIL ENDPOINTS
+# ============================================================
+
 @api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def email_list(request):
 
     if request.method == "GET":
-        emails = Email.objects.filter(user=request.user)
-        serializer = EmailSerializer(emails, many=True)
+
+        emails = Email.objects.filter(
+            user=request.user
+        )
+
+        serializer = EmailSerializer(
+            emails,
+            many=True
+        )
 
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
         )
 
-    serializer = EmailSerializer(data=request.data)
+    serializer = EmailSerializer(
+        data=request.data
+    )
 
     if serializer.is_valid():
-        category = serializer.validated_data.get("category")
 
-        if category is not None and category.user != request.user:
+        category = serializer.validated_data.get(
+            "category"
+        )
+
+        # Make sure the category belongs to
+        # the currently authenticated user.
+        if (
+            category is not None
+            and category.user != request.user
+        ):
             return Response(
                 {"detail": "Category not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        serializer.save(user=request.user)
+        serializer.save(
+            user=request.user
+        )
 
         return Response(
             serializer.data,
@@ -138,12 +238,15 @@ def email_list(request):
 
 
 @api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
 def email_update(request, pk):
+
     try:
         email = Email.objects.get(
             pk=pk,
             user=request.user
         )
+
     except Email.DoesNotExist:
         return Response(
             {"detail": "Email not found."},
@@ -157,9 +260,16 @@ def email_update(request, pk):
     )
 
     if serializer.is_valid():
-        category = serializer.validated_data.get("category")
 
-        if category is not None and category.user != request.user:
+        category = serializer.validated_data.get(
+            "category"
+        )
+
+        # Prevent assigning another user's category.
+        if (
+            category is not None
+            and category.user != request.user
+        ):
             return Response(
                 {"detail": "Category not found."},
                 status=status.HTTP_404_NOT_FOUND
@@ -179,12 +289,15 @@ def email_update(request, pk):
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def email_delete(request, pk):
+
     try:
         email = Email.objects.get(
             pk=pk,
             user=request.user
         )
+
     except Email.DoesNotExist:
         return Response(
             {"detail": "Email not found."},
@@ -198,26 +311,40 @@ def email_delete(request, pk):
     )
 
 
+# ============================================================
+# ACTION ENDPOINTS
+# ============================================================
+
 @api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def action_list(request):
 
     if request.method == "GET":
+
         actions = Action.objects.filter(
             email__user=request.user
         )
 
-        serializer = ActionSerializer(actions, many=True)
+        serializer = ActionSerializer(
+            actions,
+            many=True
+        )
 
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
         )
 
-    serializer = ActionSerializer(data=request.data)
+    serializer = ActionSerializer(
+        data=request.data
+    )
 
     if serializer.is_valid():
+
         email = serializer.validated_data["email"]
 
+        # Make sure the email belongs to
+        # the currently authenticated user.
         if email.user != request.user:
             return Response(
                 {"detail": "Email not found."},
@@ -238,6 +365,7 @@ def action_list(request):
 
 
 @api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
 def action_update(request, pk):
 
     try:
@@ -245,6 +373,7 @@ def action_update(request, pk):
             pk=pk,
             email__user=request.user
         )
+
     except Action.DoesNotExist:
         return Response(
             {"detail": "Action not found."},
@@ -272,6 +401,7 @@ def action_update(request, pk):
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def action_delete(request, pk):
 
     try:
@@ -279,6 +409,7 @@ def action_delete(request, pk):
             pk=pk,
             email__user=request.user
         )
+
     except Action.DoesNotExist:
         return Response(
             {"detail": "Action not found."},
@@ -292,26 +423,40 @@ def action_delete(request, pk):
     )
 
 
+# ============================================================
+# DRAFT ENDPOINTS
+# ============================================================
+
 @api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def draft_list(request):
 
     if request.method == "GET":
+
         drafts = Draft.objects.filter(
             email__user=request.user
         )
 
-        serializer = DraftSerializer(drafts, many=True)
+        serializer = DraftSerializer(
+            drafts,
+            many=True
+        )
 
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
         )
 
-    serializer = DraftSerializer(data=request.data)
+    serializer = DraftSerializer(
+        data=request.data
+    )
 
     if serializer.is_valid():
+
         email = serializer.validated_data["email"]
 
+        # Make sure the email belongs to
+        # the currently authenticated user.
         if email.user != request.user:
             return Response(
                 {"detail": "Email not found."},
@@ -332,6 +477,7 @@ def draft_list(request):
 
 
 @api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
 def draft_update(request, pk):
 
     try:
@@ -339,6 +485,7 @@ def draft_update(request, pk):
             pk=pk,
             email__user=request.user
         )
+
     except Draft.DoesNotExist:
         return Response(
             {"detail": "Draft not found."},
@@ -366,6 +513,7 @@ def draft_update(request, pk):
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def draft_delete(request, pk):
 
     try:
@@ -373,6 +521,7 @@ def draft_delete(request, pk):
             pk=pk,
             email__user=request.user
         )
+
     except Draft.DoesNotExist:
         return Response(
             {"detail": "Draft not found."},
@@ -386,7 +535,12 @@ def draft_delete(request, pk):
     )
 
 
+# ============================================================
+# ACTIVITY LOG ENDPOINT
+# ============================================================
+
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def activity_list(request):
 
     activities = ActivityLog.objects.filter(
